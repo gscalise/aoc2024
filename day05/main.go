@@ -4,19 +4,18 @@ import (
 	"fmt"
 	"os"
 	"regexp"
-	"slices"
 	"strconv"
 	"strings"
 )
 
-func checkOrder(rules map[string][]string, pages []string) bool {
+func checkOrder(rules map[string]map[string]bool, pages []string) bool {
 	for pIdx, page := range pages {
 		pageRules := rules[page]
 		if pIdx == len(pages)-1 || len(pageRules) == 0 {
 			continue
 		}
-		for _, must := range pageRules {
-			if slices.Contains(pages[pIdx+1:], must) {
+		for spIdx := range pages[pIdx+1:] {
+			if pageRules[pages[pIdx+spIdx+1]] {
 				return false
 			}
 		}
@@ -24,17 +23,15 @@ func checkOrder(rules map[string][]string, pages []string) bool {
 	return true
 }
 
-func getFixedMidNum(rules map[string][]string, pages []string) int {
+func getFixedMidNum(rules map[string]map[string]bool, pages []string) int {
 	for pIdx, page := range pages[:len(pages)/2+1] {
 		pageRules := rules[page]
-		if pIdx == len(pages)-1 || len(pageRules) == 0 {
+		if len(pageRules) == 0 {
 			continue
 		}
-		for _, must := range pageRules {
-			idxFound := slices.Index(pages[pIdx+1:], must)
-			if idxFound != -1 {
-				pages[pIdx] = must
-				pages[pIdx+idxFound+1] = page
+		for spIdx := range pages[pIdx+1:] {
+			if pageRules[pages[pIdx+spIdx+1]] {
+				pages[pIdx], pages[pIdx+spIdx+1] = pages[pIdx+spIdx+1], pages[pIdx]
 				return getFixedMidNum(rules, pages)
 			}
 		}
@@ -50,11 +47,15 @@ func main() {
 	ruleRE := regexp.MustCompile(`^(\d+)\|(\d+)$`)
 	sumP1 := 0
 	sumP2 := 0
-	rules := map[string][]string{}
+	rules := map[string]map[string]bool{}
 	for _, l := range inputLines {
 		rule := ruleRE.FindStringSubmatch(l)
 		if len(rule) == 3 {
-			rules[rule[2]] = append(rules[rule[2]], rule[1])
+			_, ok := rules[rule[2]]
+			if !ok {
+				rules[rule[2]] = map[string]bool{}
+			}
+			rules[rule[2]][rule[1]] = true
 		} else if strings.Contains(l, ",") {
 			pages := strings.Split(l, ",")
 			if checkOrder(rules, pages) {
