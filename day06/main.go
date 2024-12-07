@@ -6,33 +6,16 @@ import (
 	"strings"
 )
 
-var directions = [4][2]int{{-1, 0}, {0, 1}, {1, 0}, {0, -1}}
+type Position [2]int
+type Direction [2]int
 
-func newPosition(currentPosition [2]int, direction [2]int) [2]int {
-	return [2]int{
+var directions = [4]Direction{{-1, 0}, {0, 1}, {1, 0}, {0, -1}}
+
+func newPosition(currentPosition Position, direction Direction) Position {
+	return Position{
 		currentPosition[0] + direction[0],
 		currentPosition[1] + direction[1],
 	}
-}
-
-func nextToVisitedPosition(rows int, columns int, position [2]int, visitedPositions map[[2]int]bool) bool {
-	if visitedPositions[position] {
-		return true
-	}
-
-	for _, d := range directions {
-		p := [2]int{
-			position[0] + d[0],
-			position[1] + d[1],
-		}
-		if p[0] < 0 || p[0] == rows || p[1] < 0 || p[1] == columns {
-			break
-		}
-		if visitedPositions[p] {
-			return true
-		}
-	}
-	return false
 }
 
 func main() {
@@ -40,16 +23,16 @@ func main() {
 	fileText := string(fileBytes)
 	inputLines := strings.Split(fileText, "\n")
 	currentDirection := 0
-	var currentPosition [2]int
-	var initialPosition [2]int
-	visitedPositions := map[[2]int]bool{}
+	var currentPosition Position
+	var initialPosition Position
+	visitedPositions := map[Position]bool{}
 	nr := len(inputLines)
 	nc := len(inputLines[0])
 
 	for r, line := range inputLines {
 		c := strings.Index(line, "^")
 		if c != -1 {
-			currentPosition = [2]int{r, c}
+			currentPosition = Position{r, c}
 			initialPosition = currentPosition
 			visitedPositions[currentPosition] = true
 			break
@@ -58,9 +41,11 @@ func main() {
 
 	for {
 		newPos := newPosition(currentPosition, directions[currentDirection])
-		if newPos[0] >= nr || newPos[0] < 0 || newPos[1] >= nc || newPos[1] < 0 {
+		newPosR, newPosC := newPos[0], newPos[1]
+
+		if newPosR >= nr || newPosR < 0 || newPosC >= nc || newPosC < 0 {
 			break
-		} else if inputLines[newPos[0]][newPos[1]] == '#' {
+		} else if inputLines[newPosR][newPosC] == '#' {
 			currentDirection += 1
 			currentDirection %= 4
 		} else {
@@ -72,27 +57,28 @@ func main() {
 	fmt.Println("Part1:", len(visitedPositions))
 	blockCount := 0
 	for pos := range visitedPositions {
-		r := pos[0]
-		c := pos[1]
+		r, c := pos[0], pos[1]
 		visitedPaths := map[[3]int]bool{}
 		currentPosition = initialPosition
 		currentDirection = 0
 		visitedPaths[[3]int{currentPosition[0], currentPosition[1], currentDirection}] = true
 		for {
 			newPos := newPosition(currentPosition, directions[currentDirection])
-			if newPos[0] >= nr || newPos[0] < 0 || newPos[1] >= nc || newPos[1] < 0 {
+			newPosR, newPosC := newPos[0], newPos[1]
+
+			if newPosR >= nr || newPosR < 0 || newPosC >= nc || newPosC < 0 {
 				break
-			} else if (newPos[0] == r && newPos[1] == c) || inputLines[newPos[0]][newPos[1]] == '#' {
+			} else if (newPosR == r && newPosC == c) || inputLines[newPosR][newPosC] == '#' {
 				currentDirection += 1
 				currentDirection %= 4
 			} else {
-				currentPosition = newPos
-				currentPath := [3]int{currentPosition[0], currentPosition[1], currentDirection}
+				currentPath := [3]int{newPosR, newPosC, currentDirection}
 				_, ok := visitedPaths[currentPath]
 				if ok {
 					blockCount += 1
 					break
 				}
+				currentPosition = newPos
 				visitedPaths[currentPath] = true
 			}
 		}
