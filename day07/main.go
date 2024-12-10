@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type InputLine struct {
@@ -19,33 +20,67 @@ func numSolutions(currentResult int, valueIdx int, line InputLine) int {
 	}
 
 	resultSum := 0
-	if currentResult*line.values[valueIdx] == line.target {
+	if currentResult*line.values[valueIdx] <= line.target {
 		if valueIdx+1 == len(line.values) {
-			resultSum += 1
+			if currentResult*line.values[valueIdx] == line.target {
+				resultSum += 1
+			}
 		} else {
-			resultSum += numSolutions(currentResult*line.values[valueIdx], valueIdx+1, line)
-		}
-	}
-	if currentResult*line.values[valueIdx] < line.target {
-		if valueIdx+1 < len(line.values) {
-			resultSum += numSolutions(currentResult*line.values[valueIdx], valueIdx+1, line)
+			if currentResult*line.values[valueIdx] <= line.target {
+				resultSum += numSolutions(currentResult*line.values[valueIdx], valueIdx+1, line)
+			}
 		}
 	}
 
-	if currentResult+line.values[valueIdx] == line.target {
+	if currentResult+line.values[valueIdx] <= line.target {
 		if valueIdx+1 == len(line.values) {
-			resultSum += 1
+			if currentResult+line.values[valueIdx] == line.target {
+				resultSum += 1
+			}
 		} else {
-			resultSum += numSolutions(currentResult+line.values[valueIdx], valueIdx+1, line)
-		}
-	}
-	if currentResult+line.values[valueIdx] < line.target {
-		if valueIdx+1 < len(line.values) {
-			resultSum += numSolutions(currentResult+line.values[valueIdx], valueIdx+1, line)
+			if currentResult+line.values[valueIdx] < line.target {
+				resultSum += numSolutions(currentResult+line.values[valueIdx], valueIdx+1, line)
+			}
 		}
 	}
 
 	return resultSum
+}
+
+func hasSolutions(currentResult int, valueIdx int, line InputLine) bool {
+	if currentResult > line.target {
+		return false
+	}
+
+	if currentResult*line.values[valueIdx] <= line.target {
+		if valueIdx+1 == len(line.values) {
+			if currentResult*line.values[valueIdx] == line.target {
+				return true
+			}
+		} else {
+			if currentResult*line.values[valueIdx] <= line.target {
+				if hasSolutions(currentResult*line.values[valueIdx], valueIdx+1, line) {
+					return true
+				}
+			}
+		}
+	}
+
+	if currentResult+line.values[valueIdx] <= line.target {
+		if valueIdx+1 == len(line.values) {
+			if currentResult+line.values[valueIdx] == line.target {
+				return true
+			}
+		} else {
+			if currentResult+line.values[valueIdx] < line.target {
+				if hasSolutions(currentResult+line.values[valueIdx], valueIdx+1, line) {
+					return true
+				}
+			}
+		}
+	}
+
+	return false
 }
 
 func concatIntValues(v1, v2 int) int {
@@ -61,46 +96,95 @@ func numSolutionsP2(currentResult int, valueIdx int, line InputLine) int {
 
 	concatResult := concatIntValues(currentResult, line.values[valueIdx])
 
-	if concatResult == line.target {
+	if concatResult <= line.target {
 		if valueIdx+1 == len(line.values) {
-			resultSum += 1
+			if concatResult == line.target {
+				resultSum += 1
+			}
 		} else {
-			resultSum += numSolutionsP2(concatResult, valueIdx+1, line)
-		}
-	}
-	if concatResult < line.target {
-		if valueIdx+1 < len(line.values) {
-			resultSum += numSolutionsP2(concatResult, valueIdx+1, line)
+			if concatResult < line.target {
+				resultSum += numSolutionsP2(concatResult, valueIdx+1, line)
+			}
 		}
 	}
 
-	if currentResult*line.values[valueIdx] == line.target {
+	if currentResult*line.values[valueIdx] <= line.target {
 		if valueIdx+1 == len(line.values) {
-			resultSum += 1
+			if currentResult*line.values[valueIdx] == line.target {
+				resultSum += 1
+			}
 		} else {
-			resultSum += numSolutionsP2(currentResult*line.values[valueIdx], valueIdx+1, line)
-		}
-	}
-	if currentResult*line.values[valueIdx] < line.target {
-		if valueIdx+1 < len(line.values) {
-			resultSum += numSolutionsP2(currentResult*line.values[valueIdx], valueIdx+1, line)
+			if currentResult*line.values[valueIdx] < line.target {
+				resultSum += numSolutionsP2(currentResult*line.values[valueIdx], valueIdx+1, line)
+			}
 		}
 	}
 
-	if currentResult+line.values[valueIdx] == line.target {
+	if currentResult+line.values[valueIdx] <= line.target {
 		if valueIdx+1 == len(line.values) {
-			resultSum += 1
+			if currentResult+line.values[valueIdx] == line.target {
+				resultSum += 1
+			}
 		} else {
-			resultSum += numSolutionsP2(currentResult+line.values[valueIdx], valueIdx+1, line)
-		}
-	}
-	if currentResult+line.values[valueIdx] < line.target {
-		if valueIdx+1 < len(line.values) {
-			resultSum += numSolutionsP2(currentResult+line.values[valueIdx], valueIdx+1, line)
+			if currentResult+line.values[valueIdx] < line.target {
+				resultSum += numSolutionsP2(currentResult+line.values[valueIdx], valueIdx+1, line)
+			}
 		}
 	}
 
 	return resultSum
+}
+
+func hasSolutionsP2(currentResult int, valueIdx int, line InputLine) bool {
+	if currentResult > line.target {
+		return false
+	}
+
+	concatResult := concatIntValues(currentResult, line.values[valueIdx])
+
+	if concatResult <= line.target {
+		if valueIdx+1 == len(line.values) {
+			if concatResult == line.target {
+				return true
+			}
+		} else {
+			if concatResult < line.target {
+				if hasSolutionsP2(concatResult, valueIdx+1, line) {
+					return true
+				}
+			}
+		}
+	}
+
+	if currentResult*line.values[valueIdx] <= line.target {
+		if valueIdx+1 == len(line.values) {
+			if currentResult*line.values[valueIdx] == line.target {
+				return true
+			}
+		} else {
+			if currentResult*line.values[valueIdx] < line.target {
+				if hasSolutionsP2(currentResult*line.values[valueIdx], valueIdx+1, line) {
+					return true
+				}
+			}
+		}
+	}
+
+	if currentResult+line.values[valueIdx] <= line.target {
+		if valueIdx+1 == len(line.values) {
+			if currentResult+line.values[valueIdx] == line.target {
+				return true
+			}
+		} else {
+			if currentResult+line.values[valueIdx] < line.target {
+				if hasSolutionsP2(currentResult+line.values[valueIdx], valueIdx+1, line) {
+					return true
+				}
+			}
+		}
+	}
+
+	return false
 }
 
 func parseInputLines(lines []string) []InputLine {
@@ -127,14 +211,16 @@ func main() {
 	inputLines := strings.Split(string(input), "\n")
 	totalSumP1 := 0
 	totalSumP2 := 0
+	start := time.Now()
 	for _, l := range parseInputLines(inputLines) {
-		if numSolutions(l.values[0], 1, l) > 0 {
+		if hasSolutions(l.values[0], 1, l) {
 			totalSumP1 += l.target
 		}
-		if numSolutionsP2(l.values[0], 1, l) > 0 {
+		if hasSolutionsP2(l.values[0], 1, l) {
 			totalSumP2 += l.target
 		}
 	}
 	fmt.Println("Part1:", totalSumP1)
 	fmt.Println("Part2:", totalSumP2)
+	fmt.Println("Took ", time.Since(start))
 }
