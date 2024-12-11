@@ -6,6 +6,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var directions = []Direction{
@@ -57,7 +58,7 @@ func (t TrailArea) valueAt(l Location) int {
 	}
 }
 
-func (t TrailArea) getTrails(currentLocation Location) []Location {
+func (t TrailArea) getTrailDestinations(currentLocation Location) []Location {
 	curVal := t.valueAt(currentLocation)
 	if curVal == 9 {
 		return []Location{currentLocation}
@@ -68,7 +69,7 @@ func (t TrailArea) getTrails(currentLocation Location) []Location {
 			if t.isLocationInArea(newLoc) {
 				newLocVal := t.valueAt(newLoc)
 				if newLocVal == curVal+1 {
-					trails := t.getTrails(newLoc)
+					trails := t.getTrailDestinations(newLoc)
 					for _, t := range trails {
 						if !slices.Contains(foundTrailEnds, t) {
 							foundTrailEnds = append(foundTrailEnds, t)
@@ -100,10 +101,29 @@ func (t TrailArea) getNumTrails(currentLocation Location) int {
 	}
 }
 
-func main() {
-	input, _ := os.ReadFile("demo-input.txt")
+func mainPart1() {
+	startTime := time.Now()
+	input, _ := os.ReadFile("input.txt")
 	inputLines := strings.Split(string(input), "\n")
 	part1Sum := 0
+
+	trailArea := getTrailArea(inputLines)
+
+	for r, row := range trailArea.inputLines {
+		for c, col := range row {
+			if col == '0' {
+				part1Sum += len(trailArea.getTrailDestinations(Location{r, c}))
+			}
+		}
+	}
+	fmt.Println("Part 1:", part1Sum)
+	ts := time.Since(startTime)
+	fmt.Println("Took", ts.Microseconds(), "μs")
+}
+
+func mainPart2() {
+	input, _ := os.ReadFile("input.txt")
+	inputLines := strings.Split(string(input), "\n")
 	part2Sum := 0
 
 	trailArea := getTrailArea(inputLines)
@@ -111,11 +131,62 @@ func main() {
 	for r, row := range trailArea.inputLines {
 		for c, col := range row {
 			if col == '0' {
-				part1Sum += len(trailArea.getTrails(Location{r, c}))
 				part2Sum += trailArea.getNumTrails(Location{r, c})
 			}
 		}
 	}
-	fmt.Println("Part 1:", part1Sum)
 	fmt.Println("Part 2:", part2Sum)
+}
+
+func mainPart1Optimal() {
+	startTime := time.Now()
+	input, _ := os.ReadFile("input.txt")
+	inputLines := strings.Split(string(input), "\n")
+
+	trailArea := getTrailArea(inputLines)
+	reverseMap := map[int]map[Location]bool{}
+	for v := range 10 {
+		reverseMap[v] = map[Location]bool{}
+	}
+	for r, l := range trailArea.inputLines {
+		for c := range l {
+			location := Location{
+				r,
+				c,
+			}
+			v := trailArea.valueAt(location)
+			reverseMap[v][location] = true
+		}
+	}
+	trailDests := map[Location]map[Location]bool{}
+	for l := range reverseMap[9] {
+		trailDests[l] = map[Location]bool{
+			l: true,
+		}
+	}
+	for v := 8; v >= 0; v-- {
+		for l := range reverseMap[v] {
+			trailDests[l] = map[Location]bool{}
+			for _, d := range directions {
+				nl := l.add(d)
+				if trailArea.isLocationInArea(nl) && trailArea.valueAt(nl) == v+1 {
+					for lp := range trailDests[nl] {
+						trailDests[l][lp] = true
+					}
+				}
+			}
+		}
+	}
+	sum := 0
+	for l := range reverseMap[0] {
+		sum += len(trailDests[l])
+	}
+	fmt.Println(sum)
+	ts := time.Since(startTime)
+	fmt.Println("Took", ts.Microseconds(), "μs")
+}
+
+func main() {
+	mainPart1()
+	mainPart2()
 }
