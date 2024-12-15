@@ -157,6 +157,7 @@ func doPart2(fileName string, width, height int) {
 		}
 	}
 	fmt.Println("Min Factor:", minFactor, "Second Min Factor:", secondMinFactor, "Max Factor:", maxFactor, "AvgFactor:", int(float64(factorSum)/10000))
+
 	// arena.DrawArena(minFactorIdx)
 	fmt.Println("Idx:", minFactorIdx)
 	fmt.Println("Took", time.Since(startTime).Microseconds(), "μs")
