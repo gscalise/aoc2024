@@ -10,8 +10,7 @@ func main() {
 	fileBytes, _ := os.ReadFile("input.txt")
 
 	originalPatterns := []string{}
-	validPatterns := map[string]int{}
-	invalidPatterns := map[string]bool{}
+	validPatternCount := map[string]int{}
 	input := strings.Split(string(fileBytes), "\n\n")
 
 	originalPatterns = append(originalPatterns, strings.Split(input[0], ", ")...)
@@ -19,11 +18,8 @@ func main() {
 	var possiblePatterns func(string) int
 
 	possiblePatterns = func(p string) int {
-		if invalidPatterns[p] {
-			return 0
-		}
-		if validPatterns[p] > 0 {
-			return validPatterns[p]
+		if count, found := validPatternCount[p]; found {
+			return count
 		}
 		candidatePatterns := []string{}
 		for _, validPattern := range originalPatterns {
@@ -31,25 +27,16 @@ func main() {
 				candidatePatterns = append(candidatePatterns, validPattern)
 			}
 		}
-		if len(candidatePatterns) == 0 {
-			invalidPatterns[p] = true
-			return 0
-		} else {
-			sumPossible := 0
-			for _, candidatePattern := range candidatePatterns {
-				if p == candidatePattern {
-					sumPossible += 1
-				} else {
-					sumPossible += possiblePatterns(p[len(candidatePattern):])
-				}
-			}
-			if sumPossible > 0 {
-				validPatterns[p] = sumPossible
-				return sumPossible
+		sumPossible := 0
+		for _, candidatePattern := range candidatePatterns {
+			if p == candidatePattern {
+				sumPossible += 1
+			} else {
+				sumPossible += possiblePatterns(p[len(candidatePattern):])
 			}
 		}
-		invalidPatterns[p] = true
-		return 0
+		validPatternCount[p] = sumPossible
+		return sumPossible
 	}
 
 	count := 0
