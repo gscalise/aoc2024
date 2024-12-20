@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"golang.org/x/exp/constraints"
 )
 
 func ParseInputDay01(input string) ([]int, []int) {
@@ -60,6 +62,29 @@ func (d Direction) Opposite() Direction {
 		return RIGHT
 	default:
 		panic("invalid")
+	}
+}
+
+func Abs[T constraints.Integer](x T) T {
+	if x < 0 {
+		return -x
+	}
+	return x
+}
+
+func (p Position) GetDirectionTo(o Position) Direction {
+	if p.X == o.Y {
+		if p.Y < o.Y {
+			return DOWN
+		} else {
+			return UP
+		}
+	} else {
+		if p.X < o.X {
+			return RIGHT
+		} else {
+			return LEFT
+		}
 	}
 }
 
