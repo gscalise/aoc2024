@@ -233,23 +233,38 @@ func (raceTrack *RaceTrack) PrintWitCheatSteps(limit int) string {
 }
 
 func main() {
-	raceTrack := loadRaceTrack("input.txt")
+	var raceTrack *RaceTrack
+	initDuration := MeasureRuntime(
+		func() {
+			raceTrack = loadRaceTrack("input.txt")
+		},
+	)
+	fmt.Println("Init took", initDuration.Microseconds(), "μs")
 
-	_, part1cheatCount := raceTrack.countCheats(2)
-	_, part2cheatCount := raceTrack.countCheats(20)
+	part1duration := MeasureRuntime(func() {
+		_, part1cheatCount := raceTrack.countCheats(2)
+		part1sum := 0
+		for k := range part1cheatCount {
+			if k >= 100 {
+				part1sum += part1cheatCount[k]
+			}
+		}
+		fmt.Println("Part 1:", part1sum)
+	})
 
-	part1sum := 0
-	part2sum := 0
-	for k := range part1cheatCount {
-		if k >= 100 {
-			part1sum += part1cheatCount[k]
+	fmt.Println("Part 1 took", part1duration.Microseconds(), "μs")
+
+	part2duration := MeasureRuntime(func() {
+		_, part2cheatCount := raceTrack.countCheats(20)
+
+		part2sum := 0
+		for k := range part2cheatCount {
+			if k >= 100 {
+				part2sum += part2cheatCount[k]
+			}
 		}
-	}
-	fmt.Println("Part 1:", part1sum)
-	for k := range part2cheatCount {
-		if k >= 100 {
-			part2sum += part2cheatCount[k]
-		}
-	}
-	fmt.Println("Part 2:", part2sum)
+		fmt.Println("Part 2:", part2sum)
+	})
+
+	fmt.Println("Part 2 took", part2duration.Microseconds(), "μs")
 }
