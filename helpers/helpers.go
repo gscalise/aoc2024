@@ -4,6 +4,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func ParseInputDay01(input string) ([]int, []int) {
@@ -60,4 +61,10 @@ func (d Direction) Opposite() Direction {
 	default:
 		panic("invalid")
 	}
+}
+
+func MeasureRuntime(f func()) time.Duration {
+	startTime := time.Now()
+	f()
+	return time.Since(startTime)
 }
