@@ -17,29 +17,33 @@ func calculateNext(seed int) int {
 	return (seed ^ (seed << 11)) & PRUNE_BITMASK
 }
 
-func fillSequenceMap(seed int, n int, sequenceMap map[[4]int]int) int {
+type SequenceResult struct {
+	secret      int
+	sequenceMap map[[4]int]int
+}
+
+func processSeller(retValCh chan SequenceResult, seed int, n int) {
 	currentValue := seed
 	sequenceDelta := []int{}
-	seenSequences := map[[4]int]bool{}
+	sequenceMap := map[[4]int]int{}
 	for range n {
 		newValue := calculateNext(currentValue)
 		currentValueMod := currentValue % 10
 		newValueMod := newValue % 10
-		delta := int(newValueMod - currentValueMod)
+		delta := newValueMod - currentValueMod
 		sequenceDelta = append(sequenceDelta, int(delta))
 		if len(sequenceDelta) > 4 {
 			sequenceDelta = sequenceDelta[1:]
 		}
 		if len(sequenceDelta) == 4 {
 			sequenceArray := [4]int(sequenceDelta)
-			if _, ok := seenSequences[sequenceArray]; !ok {
-				sequenceMap[sequenceArray] += int(newValueMod)
-				seenSequences[sequenceArray] = true
+			if _, ok := sequenceMap[sequenceArray]; !ok {
+				sequenceMap[sequenceArray] = newValueMod
 			}
 		}
 		currentValue = newValue
 	}
-	return currentValue
+	retValCh <- SequenceResult{secret: currentValue, sequenceMap: sequenceMap}
 }
 
 func main() {
@@ -48,9 +52,20 @@ func main() {
 		fileBytes, _ := os.ReadFile("input.txt")
 		part1sum := 0
 		sequenceMap := map[[4]int]int{}
+		sellerSeeds := []int{}
+		retValCh := make(chan SequenceResult)
 		for _, l := range strings.Split(string(fileBytes), "\n") {
-			number, _ := strconv.Atoi(l)
-			part1sum += fillSequenceMap(number, 2000, sequenceMap)
+			seed, _ := strconv.Atoi(l)
+			sellerSeeds = append(sellerSeeds, seed)
+			go processSeller(retValCh, seed, 2000)
+		}
+
+		for range sellerSeeds {
+			result := <-retValCh
+			part1sum += result.secret
+			for k, v := range result.sequenceMap {
+				sequenceMap[k] += v
+			}
 		}
 		fmt.Println("Part 1:", part1sum)
 
