@@ -93,3 +93,46 @@ func MeasureRuntime(f func()) time.Duration {
 	f()
 	return time.Since(startTime)
 }
+
+func Intersection(a, b []int) []int {
+	m := make(map[int]bool)
+	for _, v := range b {
+		m[v] = true
+	}
+	var result []int
+	for _, v := range a {
+		if m[v] {
+			result = append(result, v)
+		}
+	}
+	return result
+}
+
+func Union(a, b []int) []int {
+	m := make(map[int]bool)
+	for _, v := range a {
+		m[v] = true
+	}
+	for _, v := range b {
+		m[v] = true
+	}
+	var result []int
+	for k := range m {
+		result = append(result, k)
+	}
+	return result
+}
+
+func Difference(a, b []int) []int {
+	m := make(map[int]bool)
+	for _, v := range b {
+		m[v] = true
+	}
+	var result []int
+	for _, v := range a {
+		if !m[v] {
+			result = append(result, v)
+		}
+	}
+	return result
+}
